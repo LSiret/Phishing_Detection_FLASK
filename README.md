@@ -2,7 +2,7 @@ To run the program, ensure all the used python libraries are installed by runnin
 
 -> pip install scikit-learn
 
--> pip install PyPDF2
+-> pip install pypdf2
 
 -> pip install joblib
 
