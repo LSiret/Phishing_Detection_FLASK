@@ -1,4 +1,4 @@
-To run the program, ensure all the used python libraries are installed by running the following commands in command prompt:
+To run the program, ensure all the used python libraries are installed by running the following command in command prompt:
 
 -> pip install flask; scikit-learn; email_validator; requests; joblib; pypdf2
 
