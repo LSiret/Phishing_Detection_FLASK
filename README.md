@@ -1,8 +1,12 @@
 To run the program, ensure all the used python libraries are installed by running the following commands in command prompt:
 -> pip install scikit-learn
+
 -> pip install PyPDF2
+
 -> pip install joblib
+
 -> pip install flask
+
 -> pip install email_validator
 
 If you open the python file in an IDE such as vscode, any other imports that are not installed should be underlined - install them using the same format as seen above.
