@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Email Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Phishing Email Detection</h1>
+            <p>Ensure your inbox is safe from phishing attacks</p>
+        </div>
+
+        <!-- User choice to select input type -->
+        <div class="input-choice">
+            <label>
+                <input type="radio" name="email_type" value="text" checked>
+                Email Text
+            </label>
+            <label>
+                <input type="radio" name="email_type" value="upload">
+                Email Upload
+            </label>
+        </div>
+
+        <!-- Email submission form -->
+        <form action="/" method="GET" enctype="multipart/form-data">
+
+            <div id="email-text-form" class="email-form">
+                <label for="sender">Sender's Email:</label>
+                <input type="email" id="sender" name="sender" placeholder="sender@example.com" required>
+                
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject" placeholder="Email Subject" required>
+                
+                <label for="body">Email Body:</label>
+                <textarea id="body" name="body" rows="6" placeholder="Email content..." required></textarea>
+            <button type="submit" class="submit-button">Check Email</button>
+            </div>
+        </form>
+
+        <form action="/" method="POST" enctype="multipart/form-data">
+            <div id="email-upload-form" class="email-form" style="display:none;">
+                {% if logged_in %}
+                <label for="file">Upload Email PDF:</label>
+                <input type="file" id="file" name="file" accept=".pdf" required>
+                <button type="submit" class="submit-button">Check Email</button>
+                {% else %}
+                <body>To upload PDFs please <a href="/login">login.</a></body>
+                {% endif %}
+            </div>
+
+        </form>
+
+        <!-- Display Results (if any) -->
+        {% if result %}
+        <div class="result">
+            <h2>Result: {{ result }}</h2>
+
+            {% if explanation %}
+            <div class="result-section">
+                <h3>How We Detected Phishing:</h3>
+                <p>{{ explanation }}</p>
+            </div>
+            {% endif %}
+
+            {% if advice %}
+            <div class="result-section">
+                <h3>Simple Advice:</h3>
+                <p>{{ advice }}</p>
+            </div>
+            {% endif %}
+
+            {% if reasons %}
+            <div class="result-section">
+                <h3>Reasons for Outcome:</h3>
+                <ul>
+                    {% for reason in reasons %}
+                    <li>{{ reason }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript for toggling between the email input types -->
+    <script>
+        const emailTypeRadios = document.querySelectorAll('input[name="email_type"]');
+        const emailTextForm = document.getElementById('email-text-form');
+        const emailUploadForm = document.getElementById('email-upload-form');
+
+        emailTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'text') {
+                    emailTextForm.style.display = 'block';
+                    emailUploadForm.style.display = 'none';
+                } else if (this.value === 'upload') {
+                    emailTextForm.style.display = 'none';
+                    emailUploadForm.style.display = 'block';
+                }
+            });
+        });
+
+        // Set initial display based on the selected radio button
+        if (document.querySelector('input[name="email_type"]:checked').value === 'text') {
+            emailTextForm.style.display = 'block';
+            emailUploadForm.style.display = 'none';
+        } else {
+            emailTextForm.style.display = 'none';
+            emailUploadForm.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
