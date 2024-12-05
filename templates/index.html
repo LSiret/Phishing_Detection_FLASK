@@ -32,27 +32,38 @@
             <div id="email-text-form" class="email-form">
                 <label for="sender">Sender's Email:</label>
                 <input type="email" id="sender" name="sender" placeholder="sender@example.com" required>
-                
+
                 <label for="subject">Subject:</label>
                 <input type="text" id="subject" name="subject" placeholder="Email Subject" required>
-                
+
                 <label for="body">Email Body:</label>
                 <textarea id="body" name="body" rows="6" placeholder="Email content..." required></textarea>
-            <button type="submit" class="submit-button">Check Email</button>
+                <button type="submit" class="submit-button">Check Email</button>
             </div>
         </form>
 
+        <div id="chat-history">
+            {% for message in conversation_history %}
+            {% if message.user %}
+            <p><strong>You:</strong> {{ message.user }}</p>
+            {% endif %}
+            {% if message.ai %}
+            <p><strong>AI:</strong> {{ message.ai }}</p>
+            {% endif %}
+            {% endfor %}
+        </div>
+
         <form action="/" method="POST" enctype="multipart/form-data">
             <div id="email-upload-form" class="email-form" style="display:none;">
-                {% if logged_in %}
                 <label for="file">Upload Email PDF:</label>
                 <input type="file" id="file" name="file" accept=".pdf" required>
                 <button type="submit" class="submit-button">Check Email</button>
-                {% else %}
-                <body>To upload PDFs please <a href="/login">login.</a></body>
-                {% endif %}
             </div>
-
+            <br />
+        </form>
+        <form action="/" method="GET" enctype="multipart/form-data">
+            <input type="text" name="user_input" placeholder="Type a message...">
+            <button type="submit">Send</button>
         </form>
 
         <!-- Display Results (if any) -->

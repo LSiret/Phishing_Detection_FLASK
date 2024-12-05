@@ -11,12 +11,21 @@ import joblib
 import PyPDF2
 import sqlite3
 
+API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
+headers = {"Authorization": "Bearer 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"}
+
 scam_email_model = joblib.load("data/scam_email_model.joblib")
 scam_types_model = joblib.load("data/scam_types_model.joblib")
 vectorizer = joblib.load("data/vectorizer.joblib")
 
+# LLM
+def query(payload):
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.json()
+
 # Program functions
 
+# Read all text on a PDF
 def pdf_to_text(pdf_path):
     # Extract text from PDF using PyPDF2
     pdf = PyPDF2.PdfReader(pdf_path)
@@ -25,7 +34,7 @@ def pdf_to_text(pdf_path):
         text += page.extract_text()
     return text
 
-
+# Process the text before using a model
 def process_text(text):
     # Remove hyperlinks
     text = re.sub(r'http\S+', '', text)
@@ -44,7 +53,7 @@ def process_text(text):
 
     return tokenized_text
 
-
+# Main binary prediction
 def predict_text(text):
     tokenized_text = process_text(text)
 
@@ -52,7 +61,7 @@ def predict_text(text):
     prediction = scam_email_model.predict(tokenized_text)
     return prediction
 
-
+# Convert binary prediction to name
 def prediction_to_text(prediction):
     if prediction > 0.5:
         prediction = "Legitimate"
@@ -60,7 +69,7 @@ def prediction_to_text(prediction):
         prediction = "Scam"
     return prediction
 
-
+# Predict the category of scam
 def predict_type(text):
     tokenized_text = process_text(text)
 
@@ -69,13 +78,13 @@ def predict_type(text):
     prediction = prediction.argmax(axis=0) + 1  # Add 1 to match class labels (1-4)
     return prediction
 
-
+# Convert type number to name
 def type_to_text(prediction):
     prediction = round(prediction)
     if prediction == 1:
         prediction = "Commercial Spam"
     elif prediction == 2:
-        prediction = "False Positive"
+        prediction = "False Positives"
     elif prediction == 3:
         prediction = "Fraud"
     elif prediction == 4:
@@ -193,12 +202,10 @@ def logout():
 # Route for the home page
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    
     # Redirect users not logged in
     if 'email' not in session:
-        logged_in = False
-        #return redirect(url_for('login'))
-    else:
-        logged_in = True
+        return redirect(url_for('login'))
     
     # Store chat data
     if 'conversation_history' not in session:
@@ -221,7 +228,8 @@ def index():
             prediction = predict_text(text)
             prediction = prediction_to_text(prediction)
 
-    elif request.method == 'POST':
+    elif request.method == 'POST':        
+        
         # Get the uploaded file
         file = request.files['file']
         if file:
@@ -237,10 +245,12 @@ def index():
 
             # Store the uploaded file name for display
             uploaded_file = unique_filename
+            
 
     if prediction == "Scam":
         prediction = predict_type(text)
         prediction = type_to_text(prediction)
+        session['latest_prediction'] = prediction
         match prediction:
             case "Commercial Spam":
                 advice = "These types of emails are unlikely to do any harm. You may delete it to free up your inbox, or you are receiving these frequently, there may be an option to unsubscribe from their email list."
@@ -252,8 +262,23 @@ def index():
                 advice = "Delete this email and similar emails in future. You should ignore emails like these and be extremely cautious if someone is asking for and of your information."
     else:
         advice = "This email appears to be legitimate although always take caution when clicking on any links in an email. Never send any personal data over email unless you know who you are sending it to."
+    
+    # Process LLM chat separately
+    if request.method == 'GET':
+        
+        # Get user input
+        user_input = request.args.get('user_input', '').strip()
 
-    return render_template_string(main_template, result=prediction, advice=advice)
+        # Handle user input
+        if user_input:
+            prompt = {"inputs": f"Imagine an email that is {session['latest_prediction']}. Answer the user's query: {user_input}"}
+            response = query(prompt)
+            ai_response = response[0].get('generated_text', "Sorry, I couldn't generate a proper response.")
+            
+            session['conversation_history'].append({'user': user_input, 'ai': ai_response})
+
+
+    return render_template_string(main_template, result=prediction, advice=advice, conversation_history=session['conversation_history'])
 
 
 # Main entry point of the application, this block runs when the script is executed directly
