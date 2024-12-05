@@ -1,4 +1,5 @@
 To run the program, ensure all the used python libraries are installed by running the following commands in command prompt:
+
 -> pip install scikit-learn
 
 -> pip install PyPDF2
