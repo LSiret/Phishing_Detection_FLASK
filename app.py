@@ -12,7 +12,7 @@ import PyPDF2
 import sqlite3
 
 API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
-headers = {"Authorization": "Bearer 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"}
+headers = {"Authorization": "Bearer hf_XXXXXXXXXXXXXXXXX"}
 
 scam_email_model = joblib.load("data/scam_email_model.joblib")
 scam_types_model = joblib.load("data/scam_types_model.joblib")
